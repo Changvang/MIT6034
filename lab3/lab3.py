@@ -36,7 +36,7 @@ import tree_searcher
 ## the game interactively. Be sure to re-comment them when you're done with
 ## them.  Please don't turn in a problem set that sits there asking the
 ## grader-bot to play a game!
-## 
+##
 ## Uncomment this line to play a game as white:
 #run_game(human_player, basic_player)
 
@@ -57,22 +57,26 @@ def focused_evaluate(board):
     A return value >= 1000 means that the current player has won;
     a return value <= -1000 means that the current player has lost
     """
+    #It likely basic_evaluate
     if board.is_game_over():
         if board.get_current_player_id() == board.is_win():
             score = 1000
         else:
             score = -1000
     else:
-        chain_cell_set = board.chain_cells(board.get_current_player_id())
-        print(chain_cell_set)
         score = 0
-        # Prefer having your pieces in the center of the board.
+        chain_cell_set = board.chain_cells(board.get_current_player_id())
+        for set_chain in chain_cell_set:
+            score += len(set_chain)
+        chain_cell_set_another_id = board.chain_cells(board.get_other_player_id())
+        for set_chain in chain_cell_set_another_id:
+            score -= len(set_chain)
         for row in range(6):
             for col in range(7):
                 if board.get_cell(row, col) == board.get_current_player_id():
-                    score -= abs(3 - col)
+                    score -= abs(3-col)
                 elif board.get_cell(row, col) == board.get_other_player_id():
-                    score += abs(3 - col)
+                    score += abs(3-col)
     return score
 
 
@@ -167,7 +171,7 @@ your_player = lambda board: run_search_function(board,
 def run_test_game(player1, player2, board):
     assert isinstance(globals()[board], ConnectFourBoard), "Error: can't run a game using a non-Board object!"
     return run_game(globals()[player1], globals()[player2], globals()[board])
-    
+
 def run_test_search(search, board, depth, eval_fn):
     assert isinstance(globals()[board], ConnectFourBoard), "Error: can't run a game using a non-Board object!"
     return globals()[search](globals()[board], depth=depth,
@@ -180,7 +184,7 @@ def run_test_tree_search(search, board, depth):
                              eval_fn=tree_searcher.tree_eval,
                              get_next_moves_fn=tree_searcher.tree_get_next_move,
                              is_terminal_fn=tree_searcher.is_leaf)
-    
+
 ## Do you want us to use your code in a tournament against other students? See
 ## the description in the problem set. The tournament is completely optional
 ## and has no effect on your grade.
@@ -192,4 +196,3 @@ WHAT_I_FOUND_INTERESTING = ""
 WHAT_I_FOUND_BORING = ""
 NAME = ""
 EMAIL = ""
-

@@ -89,44 +89,48 @@ quick_to_win_player = lambda board: minimax(board, depth=4,eval_fn=focused_evalu
 ## that can't improve the result. The tester will check your pruning by
 ## counting the number of static evaluations you make.
 ##
-## You can use minimax() in basicplayer.py as an example.
+# ## You can use minimax() in basicplayer.py as an example.
+#
 
-def find_move_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
-    ##This have contructure from max_value_alpha_beta but only get best move
-    Bestmove = -1
-    val = NEG_INFINITY;
-    for move , new_board in get_next_moves_fn(board):
-        Minval = min_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta)
-        if ( Minval > val):
-            Bestmove = move
-            val = Minval
-        alpha = max(alpha, val)
-        if alpha >= beta:
-            return move
-    return Bestmove
+#It can only in another ways or problem
 
-
-def max_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
-    if is_terminal_fn(depth, board):
-        return eval_fn(board)
-    val = NEG_INFINITY;
-    for move , new_board in get_next_moves_fn(board):
-        val = max(val, min_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta))
-        alpha = max(alpha, val)
-        if alpha >= beta:
-            return alpha
-    return val
-
-def min_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
-    if is_terminal_fn(depth, board):
-        return eval_fn(board)
-    val = INFINITY;
-    for move, new_board in get_next_moves_fn(board):
-        val = min(val, max_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta) )
-        beta = min(beta, val)
-        if alpha >= beta:
-            return beta
-    return val
+# def toplevel_bestvalue_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
+#     ##This have contructure from max_value_alpha_beta but only get best move
+#     Bestmove = -1
+#     val = NEG_INFINITY
+#     for move , new_board in get_next_moves_fn(board):
+#         Min_val = min_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta)
+#         print(Min_val)
+#         if ( Min_val > val):
+#             Bestmove = move
+#             val = Min_val
+#         alpha = max(alpha, val)
+#         if alpha >= beta:
+#             return move
+#     return Bestmove
+#
+#
+# def max_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
+#     if is_terminal_fn(depth, board):
+#         return eval_fn(board)
+#     val = NEG_INFINITY;
+#     for move , new_board in get_next_moves_fn(board):
+#         val = max(val, min_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta))
+#         alpha = max(alpha, val)
+#         if alpha >= beta:
+#             return alpha
+#     return val
+#
+# def min_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
+#     if is_terminal_fn(depth, board):
+#         return eval_fn(board)
+#     val = INFINITY;
+#     for move, new_board in get_next_moves_fn(board):
+#         val = min(val, max_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta) )
+#         beta = min(beta, val)
+#         if alpha >= beta:
+#             return beta
+#     return val
 
 
 def alpha_beta_search(board, depth,
@@ -138,7 +142,7 @@ def alpha_beta_search(board, depth,
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
 		      is_terminal_fn=is_terminal):
-    return find_move_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , NEG_INFINITY, INFINITY)
+    raise NotImplementedError
 
 ## Now you should be able to search twice as deep in the same amount of time.
 ## (Of course, this alpha-beta-player won't work until you've defined

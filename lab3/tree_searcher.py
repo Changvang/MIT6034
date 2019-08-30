@@ -24,7 +24,7 @@
 #
 # depth is the search depth.  If you specify depth as a very large
 #   number then your search will end at the leaves of trees.
-# 
+#
 # def eval_fn(board):
 #   a function that returns a score for a given board from the
 #   perspective of the state's current player.
@@ -61,7 +61,7 @@ class Node:
 	self.value = value
 	self.node_type = node_type
 	self.children = children
-	
+
     def set_children(self, child_nodes):
         """Set the children of this tree node"""
 	if not self.children:
@@ -71,18 +71,18 @@ class Node:
 
     def get_children(self):
 	return self.children
-    
+
     def __str__(self):
         """Print the value of this node."""
 	if self.value is None:
 	    return self.label
 	else:
 	    return "%s[%s]" %(self.label, self.value)
-    
+
     def add(self, child):
         """Add children to this node."""
 	if not self.children:
-	    self.children = []	    
+	    self.children = []
 	self.children.append(child)
 
     def num_children(self):
@@ -108,7 +108,7 @@ def make_tree(tup):
     Generates a Node tree from a tuple formatted tree
     """
     return make_tree_helper(tup, "MAX")
-    
+
 def make_tree_helper(tup, node_type):
     """Generate a Tree from tuple format"""
     n = Node(tup[0], tup[1], node_type)
@@ -118,7 +118,7 @@ def make_tree_helper(tup, node_type):
 	    node_type = "MIN"
 	else:
 	    node_type = "MAX"
-	    
+
 	for c in xrange(2,len(tup)):
 	    children.append(make_tree_helper(tup[c], node_type))
 	n.set_children(children)
@@ -162,6 +162,7 @@ def tree_eval(node):
 
 def TEST_1(expected):
     from lab3 import alpha_beta_search
+    from basicplayer import minimax
     tup_tree = ("A", None,
 		("B", None,
 		 ("C", None,
@@ -182,13 +183,13 @@ def TEST_1(expected):
 		)
     tree = make_tree(tup_tree)
     print "%s:\n%s" %("TREE_1", tree_as_string(tree))
-    v = alpha_beta_search(tree, 10,
+    v = minimax(tree, 10,
 			  tree_eval,
 			  tree_get_next_move,
 			  is_leaf)
     print "BEST MOVE: %s" %(v)
     print "EXPECTED: %s" %(expected)
-    
+
 def TEST_2(expected):
     from lab3 import alpha_beta_search
     tup_tree = ("A", None,

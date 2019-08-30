@@ -59,24 +59,22 @@ def focused_evaluate(board):
     """
     #It likely basic_evaluate
     if board.is_game_over():
-        if board.get_current_player_id() == board.is_win():
-            score = 1000
-        else:
-            score = -1000
+        # If the game has been won, we know that it must have been
+        # won or ended by the previous move.
+        # The previous move was made by our opponent.
+        # Therefore, we can't have won, so return -1000.
+        # (note that this causes a tie to be treated like a loss)
+        score = -1000
     else:
-        score = 0
-        chain_cell_set = board.chain_cells(board.get_current_player_id())
-        for set_chain in chain_cell_set:
-            score += len(set_chain)
-        chain_cell_set_another_id = board.chain_cells(board.get_other_player_id())
-        for set_chain in chain_cell_set_another_id:
-            score -= len(set_chain)
+        score = board.longest_chain(board.get_current_player_id()) * 10
+        # Prefer having your pieces in the center of the board.
         for row in range(6):
             for col in range(7):
                 if board.get_cell(row, col) == board.get_current_player_id():
                     score -= abs(3-col)
                 elif board.get_cell(row, col) == board.get_other_player_id():
                     score += abs(3-col)
+
     return score
 
 
@@ -92,6 +90,45 @@ quick_to_win_player = lambda board: minimax(board, depth=4,eval_fn=focused_evalu
 ## counting the number of static evaluations you make.
 ##
 ## You can use minimax() in basicplayer.py as an example.
+
+def find_move_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
+    ##This have contructure from max_value_alpha_beta but only get best move
+    Bestmove = -1
+    val = NEG_INFINITY;
+    for move , new_board in get_next_moves_fn(board):
+        Minval = min_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta)
+        if ( Minval > val):
+            Bestmove = move
+            val = Minval
+        alpha = max(alpha, val)
+        if alpha >= beta:
+            return move
+    return Bestmove
+
+
+def max_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
+    if is_terminal_fn(depth, board):
+        return eval_fn(board)
+    val = NEG_INFINITY;
+    for move , new_board in get_next_moves_fn(board):
+        val = max(val, min_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta))
+        alpha = max(alpha, val)
+        if alpha >= beta:
+            return alpha
+    return val
+
+def min_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
+    if is_terminal_fn(depth, board):
+        return eval_fn(board)
+    val = INFINITY;
+    for move, new_board in get_next_moves_fn(board):
+        val = min(val, max_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta) )
+        beta = min(beta, val)
+        if alpha >= beta:
+            return beta
+    return val
+
+
 def alpha_beta_search(board, depth,
                       eval_fn,
                       # NOTE: You should use get_next_moves_fn when generating
@@ -101,10 +138,7 @@ def alpha_beta_search(board, depth,
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
 		      is_terminal_fn=is_terminal):
-
-    
-
-    return best_val[1]
+    return find_move_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , NEG_INFINITY, INFINITY)
 
 ## Now you should be able to search twice as deep in the same amount of time.
 ## (Of course, this alpha-beta-player won't work until you've defined
@@ -191,7 +225,7 @@ def run_test_tree_search(search, board, depth):
 ## Do you want us to use your code in a tournament against other students? See
 ## the description in the problem set. The tournament is completely optional
 ## and has no effect on your grade.
-COMPETE = (None)
+COMPETE = (False)
 
 ## The standard survey questions.
 HOW_MANY_HOURS_THIS_PSET_TOOK = "1"

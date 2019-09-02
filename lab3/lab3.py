@@ -1,5 +1,5 @@
 # 6.034 Fall 2010 Lab 3: Games
-# Name: <Your Name>
+# Name: D:\Program\Github\MIT6034\lab3
 # Email: <Your Email>
 
 from util import INFINITY
@@ -66,6 +66,7 @@ def focused_evaluate(board):
         # (note that this causes a tie to be treated like a loss)
         score = -1000
     else:
+        #print board.chain_cells(board.get_current_player_id())
         score = board.longest_chain(board.get_current_player_id()) * 10
         # Prefer having your pieces in the center of the board.
         for row in range(6):
@@ -74,7 +75,7 @@ def focused_evaluate(board):
                     score -= abs(3-col)
                 elif board.get_cell(row, col) == board.get_other_player_id():
                     score += abs(3-col)
-
+    #print score
     return score
 
 
@@ -89,10 +90,11 @@ quick_to_win_player = lambda board: minimax(board, depth=4,eval_fn=focused_evalu
 ## that can't improve the result. The tester will check your pruning by
 ## counting the number of static evaluations you make.
 ##
-# ## You can use minimax() in basicplayer.py as an example.
-#
+## You can use minimax() in basicplayer.py as an example.
 
-#It can only in another ways or problem
+#It run ok with test but can use to play like a player .
+ ########## And i don't know why so I try create another alpha_bata_player
+
 
 # def toplevel_bestvalue_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
 #     ##This have contructure from max_value_alpha_beta but only get best move
@@ -119,19 +121,47 @@ quick_to_win_player = lambda board: minimax(board, depth=4,eval_fn=focused_evalu
 #         alpha = max(alpha, val)
 #         if alpha >= beta:
 #             return alpha
+#     print val
 #     return val
 #
 # def min_value_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha, beta):
 #     if is_terminal_fn(depth, board):
-#         return eval_fn(board)
+#         return -eval_fn(board)
 #     val = INFINITY;
 #     for move, new_board in get_next_moves_fn(board):
 #         val = min(val, max_value_alpha_beta(new_board, depth -1, eval_fn, get_next_moves_fn, is_terminal_fn, alpha, beta) )
 #         beta = min(beta, val)
 #         if alpha >= beta:
 #             return beta
+#     print val
 #     return val
 
+
+def toplevel_bestvalue_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , alpha , beta):
+    # It only using maximum
+    if is_terminal_fn(depth,  board):
+        return eval_fn(board), None
+
+    val  = NEG_INFINITY;
+    best_move = -1
+
+    for move, new_board in get_next_moves_fn(board):
+        #replace alpha and beta
+        new_alpha = -beta
+        new_beta = -alpha
+        #find value from layer and compare to get max val,move $ Val must get -Val?  $
+        new_val = -1 * toplevel_bestvalue_alpha_beta(new_board, depth-1 , eval_fn, get_next_moves_fn , is_terminal_fn , new_alpha , new_beta)[0]
+        #replace if have best_val
+        if new_val > val:
+            val, best_move = new_val, move
+        #get new alpha if can
+        alpha = max(alpha, val)
+        #pruning if alpha >= beta
+        if alpha >= beta:
+            #print alpha
+            return alpha, move
+    #print val, best_move
+    return val, best_move
 
 def alpha_beta_search(board, depth,
                       eval_fn,
@@ -142,7 +172,7 @@ def alpha_beta_search(board, depth,
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
 		      is_terminal_fn=is_terminal):
-    raise NotImplementedError
+    return toplevel_bestvalue_alpha_beta(board, depth , eval_fn, get_next_moves_fn , is_terminal_fn , NEG_INFINITY, INFINITY)[1]
 
 ## Now you should be able to search twice as deep in the same amount of time.
 ## (Of course, this alpha-beta-player won't work until you've defined
@@ -158,20 +188,70 @@ ab_iterative_player = lambda board: \
                         search_fn=alpha_beta_search,
                         eval_fn=focused_evaluate, timeout=5)
 #run_game(human_player, alphabeta_player)
-
+#run_game(basic_player, alphabeta_player)
 ## Finally, come up with a better evaluation function than focused-evaluate.
 ## By providing a different function, you should be able to beat
 ## simple-evaluate (or focused-evaluate) while searching to the
 ## same depth.
 
+def get_value_for_cell(board, row , col):
+    if 0<= row <= 5 and 0<= col <= 6 :
+        if board.get_cell(row,col) == board.get_other_player_id() :
+            return 1
+    return 0
+
 def better_evaluate(board):
-    raise NotImplementedError
+    if board.is_game_over():
+        if board.is_win() == board.get_current_player_id():
+            return 1000
+        else:
+            return -1000
+    #board not over
+    #print board.get_current_player_id()
+    current_player_chain_cells = board.chain_cells(board.get_current_player_id())
+    # fliter all chain 2 and 3 of Chain_set
+    List_chain_with_more_2_continue = []
+    for Chain in current_player_chain_cells:
+        if len(Chain) >=2 :
+            List_chain_with_more_2_continue.append(Chain)
+    # Counting score = (4*chain_2 - end_cell) + (9*chain_3 - end_cell)+
+
+    score = 0
+
+    for Chain_set in List_chain_with_more_2_continue:
+        # row chain
+        if Chain_set[0][0] == Chain_set[1][0] :
+            score += len(Chain_set)*3 - 2*( get_value_for_cell(board, Chain_set[0][0], Chain_set[0][1] + 1) + get_value_for_cell(board, Chain_set[0][0], Chain_set[len(Chain_set)-1][1] - 1))
+        # col chain
+        elif Chain_set[0][1] == Chain_set[1][1]:
+            score += len(Chain_set)*3 - 2*(get_value_for_cell(board, Chain_set[0][0] + 1, Chain_set[0][1]) + get_value_for_cell(board, Chain_set[len(Chain_set) -1][0] - 1, Chain_set[0][1]))
+        else:
+            score += len(Chain_set)*3
+            if Chain_set[0][0] + 1 == Chain_set[1][0]:
+                if Chain_set[0][1] + 1 == Chain_set[1][1]:
+                    score -= 2*(get_value_for_cell(board, Chain_set[0][0] - 1, Chain_set[0][1] - 1) + get_value_for_cell(board, Chain_set[len(Chain_set) -1][0] + 1, Chain_set[len(Chain_set)-1][1] + 1))
+                if Chain_set[0][1] - 1 == Chain_set[1][1]:
+                    score -= 2*(get_value_for_cell(board, Chain_set[0][0] - 1, Chain_set[0][1] + 1) + get_value_for_cell(board, Chain_set[len(Chain_set) -1][0] + 1, Chain_set[len(Chain_set)-1][1] - 1))
+            if Chain_set[0][0] - 1 == Chain_set[1][0]:
+                if Chain_set[0][1] + 1 == Chain_set[1][1]:
+                    score -= 2*(get_value_for_cell(board, Chain_set[0][0] + 1, Chain_set[0][1] - 1) + get_value_for_cell(board, Chain_set[len(Chain_set) -1][0] - 1, Chain_set[len(Chain_set)-1][1] + 1))
+                if Chain_set[0][1] - 1 == Chain_set[1][1]:
+                    score -= 2*(get_value_for_cell(board, Chain_set[0][0] + 1, Chain_set[0][1] + 1) + get_value_for_cell(board, Chain_set[len(Chain_set) -1][0] - 1, Chain_set[len(Chain_set)-1][1] - 1))
+        #print Chain_set, score
+    # Prefer having your pieces in the center of the board.
+    # for row in range(6):
+    #     for col in range(7):
+    #         if board.get_cell(row, col) == board.get_current_player_id():
+    #             score -= abs(3-col)
+    #         elif board.get_cell(row, col) == board.get_other_player_id():
+    #             score += abs(3-col)
+    return score
 
 # Comment this line after you've fully implemented better_evaluate
-better_evaluate = memoize(basic_evaluate)
+#better_evaluate = memoize(basic_evaluate)
 
 # Uncomment this line to make your better_evaluate run faster.
-# better_evaluate = memoize(better_evaluate)
+better_evaluate = memoize(better_evaluate)
 
 # For debugging: Change this if-guard to True, to unit-test
 # your better_evaluate function.
@@ -189,6 +269,7 @@ if False:
                                     current_player = 2)
     # better evaluate from player 1
     print "%s => %s" %(test_board_1, better_evaluate(test_board_1))
+
     # better evaluate from player 2
     print "%s => %s" %(test_board_2, better_evaluate(test_board_2))
 
@@ -198,8 +279,8 @@ your_player = lambda board: run_search_function(board,
                                                 eval_fn=better_evaluate,
                                                 timeout=5)
 
-#your_player = lambda board: alpha_beta_search(board, depth=4,
-#                                              eval_fn=better_evaluate)
+your_player = lambda board: alpha_beta_search(board, depth=4,
+                                             eval_fn=better_evaluate)
 
 ## Uncomment to watch your player play a game:
 #run_game(your_player, your_player)
